@@ -40,6 +40,11 @@ the content is encrypted before it ever leaves your browser, so a public reposit
 
 > 本地试用：不填 `JOURNAL_CONFIG` 直接打开 `index.html`，是单设备演示模式，数据存在本机浏览器里。
 
+## 两条保命须知
+
+- **永远不要删除仓库里的 `vault.json` 和 `config.enc`**：盐在前者里，删了等于钥匙熔了，全部日记永久打不开（删日记条目没关系，删这两个文件不行）
+- **令牌会过期**（细粒度令牌最长约一年）：到期前在日记页右上角「设置」里粘贴新令牌即可无缝续上，密码和已有日记都不受影响；真等到过期了才想起来，就只能走人工抢救流程了
+
 ## 之后想做的事（Roadmap）
 
 - [ ] 年度成册：按年份自动分卷，生成更精致的书籍版式 PDF
