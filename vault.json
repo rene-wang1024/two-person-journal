@@ -1,0 +1,18 @@
+{
+  "v": 2,
+  "createdAt": "2026-11-11",
+  "theme": "paper",
+  "slots": [
+    {
+      "type": "password",
+      "salt": "DgfDgM/tbRQ9vj7uiwYigg==",
+      "wrapped": "{\"v\":1,\"iv\":\"EphVWtWozKwYfwNd\",\"ct\":\"5XVfs+FRz5DMe4bt/aX3tUnPVA/iISmu/+HtJ3/C+q15+/9daFgMYdimtCieoJLdKFuMuAP6nxZV1mkFuRYvQqp9B07GyigO1Q==\"}"
+    },
+    {
+      "type": "recovery",
+      "salt": "4gGsHAS+Xv4LPShXEsVdMw==",
+      "wrapped": "{\"v\":1,\"iv\":\"ivM+N9k/0s45+/MG\",\"ct\":\"t71tazvzVJhT4qvYld7vuafRhzZc2g4ZHc+y8Hwhit8BdYA3sMAXP8R/6ruaGHgBUShJyrfb3ueUZdyGyv33jX6bSxQkXq/gAg==\"}"
+    }
+  ],
+  "hint": "月亮"
+}
