@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>两人笺 · A Journal for Two</title>
+<style>
+  :root{
+    --paper:#f6f1e7; --card:#fffdf6; --ink:#33302a; --ink-soft:#5c564c;
+    --muted:#9a9081; --line:#e3dac8; --vermilion:#b03a2e; --vermilion-soft:#c9502f;
+    --pine:#3e5c50; --gold:#a9832f;
+    --serif:"Songti SC","STSong","Noto Serif CJK SC","Source Han Serif SC","SimSun",Georgia,"Times New Roman",serif;
+    --sans:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    background-image:radial-gradient(#e9e0cd 0.6px, transparent 0.6px);
+    background-size:22px 22px;
+    color:var(--ink); font-family:var(--serif);
+    min-height:100vh;
+  }
+  .wrap{max-width:680px;margin:0 auto;padding:0 20px 90px}
+  /* ---------- lock / setup ---------- */
+  .gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .gate-card{width:100%;max-width:400px;text-align:center;padding:48px 34px 40px;background:var(--card);
+    border:1px solid var(--line);border-radius:6px;box-shadow:0 14px 44px rgba(90,75,50,.12)}
+  .gate-seal{width:58px;height:58px;margin:0 auto 18px;border-radius:10px;background:var(--vermilion);
+    color:#fdf6ec;font-family:var(--serif);font-size:27px;line-height:58px;letter-spacing:2px;
+    box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+  .gate h1{font-size:29px;letter-spacing:6px;margin:0 0 8px;font-weight:600}
+  .gate .sub{color:var(--ink-soft);font-size:14px;letter-spacing:2px;margin:0 0 6px}
+  .gate .sub-en{color:var(--muted);font-size:11px;letter-spacing:3px;text-transform:uppercase;margin:0 0 30px;font-family:var(--sans)}
+  .gate input[type=password],.gate input[type=text]{
+    width:100%;padding:13px 14px;font-size:16px;font-family:var(--sans);color:var(--ink);
+    border:1px solid var(--line);border-radius:6px;background:#fff;text-align:center;letter-spacing:1px;margin-bottom:12px}
+  .gate input:focus{outline:none;border-color:var(--vermilion)}
+  .gate .hint{font-size:12.5px;color:var(--muted);line-height:1.8;font-family:var(--sans);margin-top:16px;text-align:left}
+  .gate label.flabel{display:block;text-align:left;font-size:12.5px;color:var(--ink-soft);font-family:var(--sans);margin:10px 0 5px}
+  .err{color:var(--vermilion);font-size:13.5px;min-height:20px;font-family:var(--sans);margin:4px 0 8px}
+  .shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+  /* ---------- buttons ---------- */
+  .btn{appearance:none;border:1px solid var(--vermilion);background:var(--vermilion);color:#fdf6ec;
+    font-family:var(--serif);font-size:15px;letter-spacing:3px;padding:12px 26px;border-radius:6px;cursor:pointer;width:100%}
+  .btn:active{background:var(--vermilion-soft)}
+  .btn[disabled]{opacity:.55;cursor:wait}
+  .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line);width:auto;padding:8px 16px;font-size:13.5px;letter-spacing:2px}
+  .btn-ghost:active{background:#f1ead9}
+  /* ---------- journal ---------- */
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;padding:34px 0 6px;border-bottom:2px solid var(--ink);margin-bottom:4px}
+  header.top .t h1{font-size:26px;letter-spacing:5px;margin:0;font-weight:600}
+  header.top .t p{margin:5px 0 2px;color:var(--muted);font-size:12px;letter-spacing:2.5px;font-family:var(--sans)}
+  .top-actions{display:flex;gap:8px;padding-bottom:4px}
+  .mode-badge{display:inline-block;font-family:var(--sans);font-size:11px;color:var(--gold);border:1px solid #d9c48c;
+    border-radius:20px;padding:2px 10px;letter-spacing:1px;margin:10px 0 0;background:#fbf6e6}
+  .write-bar{margin:22px 0 6px;display:flex;justify-content:center}
+  .btn-write{width:auto;padding:12px 34px;font-size:15.5px}
+  .day-group{margin-top:30px}
+  .day-head{display:flex;align-items:center;gap:12px;color:var(--ink-soft);font-size:14.5px;letter-spacing:2px}
+  .day-head::after{content:"";flex:1;border-top:1px solid var(--line)}
+  .day-head .wk{color:var(--muted);font-size:12.5px}
+  .entry{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:20px 22px 16px;margin-top:14px;
+    box-shadow:0 3px 14px rgba(90,75,50,.06)}
+  .entry-head{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+  .seal{flex:none;width:38px;height:38px;border-radius:7px;color:#fdf6ec;font-size:18px;line-height:38px;text-align:center;
+    font-family:var(--serif);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+  .seal.a{background:var(--vermilion)} .seal.b{background:var(--pine)}
+  .entry-head .who{font-size:15.5px;letter-spacing:1px}
+  .entry-head .when{color:var(--muted);font-size:12px;font-family:var(--sans);margin-top:1px}
+  .entry-head .ops{margin-left:auto;display:flex;gap:6px}
+  .op-btn{border:none;background:none;color:var(--muted);font-family:var(--sans);font-size:12.5px;cursor:pointer;padding:4px 6px}
+  .op-btn:active{color:var(--vermilion)}
+  .entry-text{font-size:16.5px;line-height:2.05;letter-spacing:.4px;white-space:pre-wrap;word-break:break-word}
+  .entry-imgs{margin-top:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  .entry-imgs img{width:100%;height:100%;max-height:300px;object-fit:cover;border-radius:4px;border:1px solid var(--line);cursor:zoom-in}
+  .empty{text-align:center;color:var(--muted);padding:70px 20px;font-size:15px;letter-spacing:2px;line-height:2.2}
+  .empty .big{font-size:19px;color:var(--ink-soft);letter-spacing:4px}
+  /* ---------- composer ---------- */
+  .composer{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:20px 22px;margin-top:16px;
+    box-shadow:0 8px 26px rgba(90,75,50,.10)}
+  .composer h3{margin:0 0 14px;font-size:16px;letter-spacing:3px;font-weight:600}
+  .author-pick{display:flex;gap:10px;margin-bottom:14px}
+  .author-opt{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:6px;padding:7px 14px 7px 8px;cursor:pointer;font-size:14.5px;background:#fff}
+  .author-opt.sel{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+  .author-opt .seal{width:30px;height:30px;font-size:14.5px;line-height:30px;border-radius:5px}
+  .composer textarea{width:100%;min-height:130px;border:1px solid var(--line);border-radius:6px;padding:13px 14px;
+    font-family:var(--serif);font-size:16px;line-height:1.9;color:var(--ink);background:#fff;resize:vertical}
+  .composer textarea:focus{outline:none;border-color:var(--vermilion)}
+  .img-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .img-thumb{position:relative;width:76px;height:76px}
+  .img-thumb img{width:100%;height:100%;object-fit:cover;border-radius:4px;border:1px solid var(--line)}
+  .img-thumb button{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;border:none;
+    background:var(--ink);color:#fff;font-size:12px;line-height:1;cursor:pointer}
+  .composer-foot{display:flex;align-items:center;gap:10px;margin-top:16px}
+  .attach-btn{font-family:var(--sans);font-size:13px;color:var(--ink-soft);border:1px dashed #cfc4a8;background:#fbf7ec;
+    border-radius:6px;padding:9px 15px;cursor:pointer}
+  .composer-foot .spacer{flex:1}
+  .composer-foot .btn{width:auto;padding:10px 28px}
+  .status-line{font-family:var(--sans);font-size:12.5px;color:var(--muted);min-height:18px;margin-top:10px}
+  /* ---------- lightbox ---------- */
+  .lightbox{position:fixed;inset:0;background:rgba(20,17,12,.92);display:none;align-items:center;justify-content:center;z-index:50;cursor:zoom-out}
+  .lightbox.open{display:flex}
+  .lightbox img{max-width:94vw;max-height:92vh;border-radius:4px}
+  .hidden{display:none !important}
+  /* ---------- print (成册) ---------- */
+  #printArea{display:none}
+  @media print{
+    body{background:#fff}
+    .screen{display:none !important}
+    #printArea{display:block;font-family:var(--serif);color:#222;max-width:640px;margin:0 auto}
+    #printArea .book-title{text-align:center;padding:120px 0 60px;page-break-after:always}
+    #printArea .book-title h1{font-size:34px;letter-spacing:10px;font-weight:600}
+    #printArea .book-title p{color:#666;letter-spacing:3px;font-size:13px}
+    #printArea .p-entry{margin:0 0 34px;page-break-inside:avoid}
+    #printArea .p-date{color:#888;font-size:12.5px;letter-spacing:2px;border-bottom:1px solid #ddd;padding-bottom:6px;margin-bottom:12px}
+    #printArea .p-who{font-size:13.5px;color:#555;margin-bottom:6px;letter-spacing:1px}
+    #printArea .p-text{font-size:14.5px;line-height:2.1;white-space:pre-wrap}
+    #printArea img{max-width:100%;border-radius:2px;margin-top:10px;page-break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="lightbox" id="lightbox"><img id="lightboxImg" alt=""></div>
+<div id="printArea"></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   两人笺 · A Journal for Two
+   A private journal for exactly two people.
+   - Single-file web app. No server, no account, no tracking, no notifications.
+   - Entries are encrypted in the browser (AES-GCM, key derived from a shared
+     password via PBKDF2) BEFORE they are stored.
+   - Storage: a GitHub repository (via the GitHub API) when configured below,
+     otherwise this browser's localStorage (demo / single-device mode).
+   - The password is never stored anywhere. If it is lost, the journal
+     cannot be opened again. Choose a long one and keep it somewhere safe.
+   ===================================================================== */
+
+/* ---- Deployment config: fill these three lines when hosting on GitHub Pages ---- */
+const JOURNAL_CONFIG = {
+  owner: "rene-wang1024",
+  repo: "two-person-journal",
+  branch: "main"
+};
+
+const PBKDF2_ITERATIONS = 310000;
+const LS_PREFIX = "tpj_";
+
+/* ---------------- base64 / utf8 helpers ---------------- */
+function u8ToB64(u8){
+  let s = "";
+  const CH = 0x8000;
+  for (let i = 0; i < u8.length; i += CH) s += String.fromCharCode.apply(null, u8.subarray(i, i + CH));
+  return btoa(s);
+}
+function b64ToU8(b64){
+  const s = atob(String(b64).replace(/\s/g, ""));
+  const u8 = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) u8[i] = s.charCodeAt(i);
+  return u8;
+}
+const te = new TextEncoder(), td = new TextDecoder();
+function strToB64(str){ return u8ToB64(te.encode(str)); }
+function b64ToStr(b64){ return td.decode(b64ToU8(b64)); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+/* ---------------- crypto ---------------- */
+async function deriveKey(password, saltU8){
+  const base = await crypto.subtle.importKey("raw", te.encode(password), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: saltU8, iterations: PBKDF2_ITERATIONS, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+}
+async function encryptJSON(key, obj){
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, te.encode(JSON.stringify(obj)));
+  return JSON.stringify({ v: 1, iv: u8ToB64(iv), ct: u8ToB64(new Uint8Array(ct)) });
+}
+async function decryptJSON(key, blob){
+  const o = JSON.parse(blob);
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64ToU8(o.iv) }, key, b64ToU8(o.ct));
+  return JSON.parse(td.decode(pt));
+}
+
+/* ---------------- state ---------------- */
+const S = {
+  mode: (JOURNAL_CONFIG.owner && JOURNAL_CONFIG.repo) ? "github" : "local",
+  key: null, salt: null, names: [], token: null,
+  entries: [],          // [{file, sha, data:{id, author, ts, text, images[]}}]
+  composeImages: [],    // dataURLs pending in composer
+  editingFile: null
+};
+
+/* ---------------- GitHub API ---------------- */
+function ghHeaders(useToken){
+  const h = { "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+  const t = useToken === false ? null : (S.token || (S._setupToken || null));
+  if (t) h["Authorization"] = "Bearer " + t;
+  return h;
+}
+function ghUrl(path){ return "https://api.github.com/repos/" + JOURNAL_CONFIG.owner + "/" + JOURNAL_CONFIG.repo + "/contents/" + path; }
+async function ghGet(path, useToken){
+  const r = await fetch(ghUrl(path) + "?ref=" + JOURNAL_CONFIG.branch, { headers: ghHeaders(useToken) });
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error("GitHub 读取失败 (" + r.status + ")");
+  const j = await r.json();
+  return { content: b64ToStr(j.content), sha: j.sha };
+}
+async function ghPut(path, contentStr, message, sha, tokenOverride){
+  const body = { message, content: strToB64(contentStr), branch: JOURNAL_CONFIG.branch };
+  if (sha) body.sha = sha;
+  const old = S.token; if (tokenOverride) S.token = tokenOverride;
+  try {
+    const r = await fetch(ghUrl(path), { method: "PUT", headers: { ...ghHeaders(), "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error("GitHub 保存失败 (" + r.status + ") " + (e.message || "")); }
+    const j = await r.json();
+    return j.content && j.content.sha;
+  } finally { S.token = old; }
+}
+async function ghDelete(path, sha){
+  const r = await fetch(ghUrl(path), { method: "DELETE", headers: { ...ghHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({ message: "删除一篇日记", sha, branch: JOURNAL_CONFIG.branch }) });
+  if (!r.ok) throw new Error("GitHub 删除失败 (" + r.status + ")");
+}
+async function ghListEntries(){
+  const r = await fetch(ghUrl("entries") + "?ref=" + JOURNAL_CONFIG.branch, { headers: ghHeaders() });
+  if (r.status === 404) return [];
+  if (!r.ok) throw new Error("GitHub 列表失败 (" + r.status + ")");
+  const j = await r.json();
+  return j.filter(x => x.type === "file" && /\.json$/.test(x.name)).map(x => x.name);
+}
+
+/* ---------------- storage drivers ---------------- */
+const store = {
+  async getVault(){
+    if (S.mode === "github"){ const f = await ghGet("vault.json", false); return f ? JSON.parse(f.content) : null; }
+    const v = localStorage.getItem(LS_PREFIX + "vault"); return v ? JSON.parse(v) : null;
+  },
+  async putVault(vaultObj, tokenOverride){
+    if (S.mode === "github") await ghPut("vault.json", JSON.stringify(vaultObj, null, 2), "初始化日记本", null, tokenOverride);
+    else localStorage.setItem(LS_PREFIX + "vault", JSON.stringify(vaultObj));
+  },
+  async getConfig(){
+    if (S.mode === "github"){ const f = await ghGet("config.enc", false); return f ? f.content : null; }
+    return localStorage.getItem(LS_PREFIX + "config");
+  },
+  async putConfig(blob, tokenOverride){
+    if (S.mode === "github") await ghPut("config.enc", blob, "保存日记本设置", null, tokenOverride);
+    else localStorage.setItem(LS_PREFIX + "config", blob);
+  },
+  async listEntryFiles(){
+    if (S.mode === "github") return ghListEntries();
+    const all = JSON.parse(localStorage.getItem(LS_PREFIX + "entries") || "{}");
+    return Object.keys(all);
+  },
+  async getEntry(file){
+    if (S.mode === "github"){ const f = await ghGet("entries/" + file); return f ? { blob: f.content, sha: f.sha } : null; }
+    const all = JSON.parse(localStorage.getItem(LS_PREFIX + "entries") || "{}");
+    return all[file] ? { blob: all[file], sha: null } : null;
+  },
+  async putEntry(file, blob, sha){
+    if (S.mode === "github") return ghPut("entries/" + file, blob, sha ? "修改一篇日记" : "新添一篇日记", sha);
+    const all = JSON.parse(localStorage.getItem(LS_PREFIX + "entries") || "{}");
+    all[file] = blob; localStorage.setItem(LS_PREFIX + "entries", JSON.stringify(all));
+    return null;
+  },
+  async deleteEntry(file, sha){
+    if (S.mode === "github") return ghDelete("entries/" + file, sha);
+    const all = JSON.parse(localStorage.getItem(LS_PREFIX + "entries") || "{}");
+    delete all[file]; localStorage.setItem(LS_PREFIX + "entries", JSON.stringify(all));
+  }
+};
+</script>
+<script>
+"use strict";
+/* ---------------- UI ---------------- */
+const app = document.getElementById("app");
+const WEEK = ["日","一","二","三","四","五","六"];
+function fmtDay(ts){ const d = new Date(ts); return d.getFullYear() + "年" + (d.getMonth()+1) + "月" + d.getDate() + "日"; }
+function fmtWeek(ts){ return "星期" + WEEK[new Date(ts).getDay()]; }
+function fmtTime(ts){ const d = new Date(ts); return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0"); }
+function entryFileName(ts){
+  const d = new Date(ts);
+  const p = n => String(n).padStart(2,"0");
+  const rand = Math.random().toString(36).slice(2,6);
+  return "e" + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + "-" + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + "-" + rand + ".json";
+}
+function sealHTML(idx, name, cls){ return '<div class="seal ' + (idx === 0 ? "a" : "b") + (cls ? " " + cls : "") + '">' + esc((name || "?").slice(0,1)) + "</div>"; }
+
+function gateShell(inner){
+  app.innerHTML = '<div class="gate"><div class="gate-card" id="gateCard">' +
+    '<div class="gate-seal">笺</div><h1>两人笺</h1>' +
+    '<p class="sub">一本只属于两个人的日记</p><p class="sub-en">A Journal for Two</p>' + inner + "</div></div>";
+}
+function lockScreen(errMsg){
+  gateShell(
+    '<form id="unlockForm"><input type="password" id="pw" placeholder="输入你们的密码" autocomplete="current-password">' +
+    '<div class="err" id="gateErr">' + esc(errMsg || "") + '</div>' +
+    '<button class="btn" type="submit" id="unlockBtn">开 笺</button></form>' +
+    '<p class="hint">这本日记没有账号、没有找回密码。密码只在你们两个人手里，内容在打开前一直是加密的。</p>' +
+    (S.mode === "local" ? '<p class="hint">当前是本地演示模式：日记只存在这台设备的浏览器里。部署到 GitHub 后，两个人才能在各自的设备上同步。</p>' : "")
+  );
+  document.getElementById("unlockForm").addEventListener("submit", doUnlock);
+  document.getElementById("pw").focus();
+}
+function setupScreen(errMsg){
+  const gh = S.mode === "github";
+  gateShell(
+    '<form id="setupForm">' +
+    '<label class="flabel">两个人的署名（日记里显示的名字）</label>' +
+    '<div style="display:flex;gap:8px"><input type="text" id="nameA" placeholder="名字一" maxlength="12"><input type="text" id="nameB" placeholder="名字二" maxlength="12"></div>' +
+    '<label class="flabel">设一个共同密码（至少 8 位，越长越好，忘了无法找回）</label>' +
+    '<input type="password" id="pw1" placeholder="共同密码" autocomplete="new-password">' +
+    '<input type="password" id="pw2" placeholder="再输一遍" autocomplete="new-password">' +
+    (gh ? '<label class="flabel">GitHub 访问令牌（创建者在 GitHub 生成的细粒度令牌，只授权本仓库读写；它会被密码加密后保存，对方不需要它）</label><input type="text" id="ghtoken" placeholder="github_pat_…">' : "") +
+    '<div class="err" id="gateErr">' + esc(errMsg || "") + '</div>' +
+    '<button class="btn" type="submit" id="setupBtn">建 这 本 日 记</button></form>' +
+    '<p class="hint">从这一刻起，你们写下的每一个字都会先加密、再保存。没有密码的人——包括托管它的网站——看到的只是一堆乱码。</p>'
+  );
+  document.getElementById("setupForm").addEventListener("submit", doSetup);
+}
+
+async function doUnlock(e){
+  e.preventDefault();
+  const pw = document.getElementById("pw").value;
+  const btn = document.getElementById("unlockBtn"), err = document.getElementById("gateErr");
+  if (!pw) return;
+  btn.disabled = true; btn.textContent = "正在开笺…"; err.textContent = "";
+  try {
+    const vault = await store.getVault();
+    if (!vault) { setupScreen(); return; }
+    const key = await deriveKey(pw, b64ToU8(vault.salt));
+    const blob = await store.getConfig();
+    const cfg = await decryptJSON(key, blob);   // throws if password is wrong
+    S.key = key; S.salt = vault.salt; S.names = cfg.names || ["我","他"]; S.token = cfg.token || null;
+    await enterJournal();
+  } catch (ex) {
+    btn.disabled = false; btn.textContent = "开 笺";
+    err.textContent = "密码不对，或者日记暂时读不出来。再试一次。";
+    document.getElementById("gateCard").classList.add("shake");
+    setTimeout(() => document.getElementById("gateCard").classList.remove("shake"), 450);
+  }
+}
+async function doSetup(e){
+  e.preventDefault();
+  const nameA = document.getElementById("nameA").value.trim(), nameB = document.getElementById("nameB").value.trim();
+  const pw1 = document.getElementById("pw1").value, pw2 = document.getElementById("pw2").value;
+  const err = document.getElementById("gateErr"), btn = document.getElementById("setupBtn");
+  const tokenEl = document.getElementById("ghtoken");
+  const token = tokenEl ? tokenEl.value.trim() : null;
+  if (!nameA || !nameB) { err.textContent = "先把两个人的署名填好。"; return; }
+  if (pw1.length < 8) { err.textContent = "密码至少 8 位——这本日记的安全全靠它，建议用一句长一点的话。"; return; }
+  if (pw1 !== pw2) { err.textContent = "两遍密码不一样。"; return; }
+  if (S.mode === "github" && !token) { err.textContent = "GitHub 模式需要先填访问令牌。"; return; }
+  btn.disabled = true; btn.textContent = "正在建…";
+  try {
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const key = await deriveKey(pw1, salt);
+    const blob = await encryptJSON(key, { names: [nameA, nameB], token });
+    await store.putVault({ salt: u8ToB64(salt) }, token);
+    await store.putConfig(blob, token);
+    S.key = key; S.salt = u8ToB64(salt); S.names = [nameA, nameB]; S.token = token;
+    await enterJournal();
+  } catch (ex) {
+    btn.disabled = false; btn.textContent = "建 这 本 日 记";
+    err.textContent = "创建失败：" + (ex.message || "请检查网络和令牌权限");
+  }
+}
+
+async function enterJournal(){
+  gateShell('<p class="sub" style="margin-top:10px">正在翻开日记…</p>');
+  const files = await store.listEntryFiles();
+  const out = [];
+  for (const f of files) {
+    const rec = await store.getEntry(f);
+    if (!rec) continue;
+    try { out.push({ file: f, sha: rec.sha, data: await decryptJSON(S.key, rec.blob) }); } catch (e) { /* skip undecryptable */ }
+  }
+  out.sort((x, y) => new Date(y.data.ts) - new Date(x.data.ts));
+  S.entries = out;
+  renderJournal();
+}
+
+function renderJournal(){
+  const groups = {};
+  for (const en of S.entries) { const d = fmtDay(en.data.ts); (groups[d] = groups[d] || []).push(en); }
+  const days = Object.keys(groups).sort((a, b) => new Date(groups[b][0].data.ts) - new Date(groups[a][0].data.ts));
+  let h = '<div class="screen"><div class="wrap">' +
+    '<header class="top"><div class="t"><h1>两人笺</h1><p>' + esc(S.names.join(" · ")) + ' 的日记</p></div>' +
+    '<div class="top-actions"><button class="btn-ghost btn" onclick="printBook()">打印成册</button>' +
+    '<button class="btn-ghost btn" onclick="location.reload()">锁上</button></div></header>' +
+    (S.mode === "local" ? '<span class="mode-badge">本地演示模式 · 部署到 GitHub 后两人同步</span>' : "") +
+    '<div class="write-bar"><button class="btn btn-write" onclick="openComposer()">写 一 篇</button></div>' +
+    '<div id="composerSlot"></div>';
+  if (!S.entries.length) {
+    h += '<div class="empty"><div class="big">第一页还空着</div>把今天的一句话、一张照片，留在这里。<br>不发给谁，不提醒谁——想念的时候，自己来翻。</div>';
+  }
+  for (const d of days) {
+    h += '<div class="day-group"><div class="day-head"><span>' + d + '</span><span class="wk">' + fmtWeek(groups[d][0].data.ts) + "</span></div>";
+    for (const en of groups[d]) h += entryHTML(en);
+    h += "</div>";
+  }
+  h += "</div></div>";
+  app.innerHTML = h;
+}
+function entryHTML(en){
+  const d = en.data;
+  const imgs = (d.images || []).map(src => '<img src="' + src + '" onclick="zoomImg(this.src)" alt="">').join("");
+  return '<article class="entry"><div class="entry-head">' + sealHTML(d.author, S.names[d.author]) +
+    '<div><div class="who">' + esc(S.names[d.author] || "") + '</div><div class="when">' + fmtTime(d.ts) + "</div></div>" +
+    '<div class="ops"><button class="op-btn" onclick="editEntry(\'' + en.file + '\')">改</button>' +
+    '<button class="op-btn" onclick="delEntry(\'' + en.file + '\')">删</button></div></div>' +
+    '<div class="entry-text">' + esc(d.text || "") + "</div>" +
+    (imgs ? '<div class="entry-imgs">' + imgs + "</div>" : "") + "</article>";
+}
+
+/* ---------------- composer ---------------- */
+function openComposer(prefill){
+  S.composeImages = prefill ? (prefill.data.images || []).slice() : [];
+  S.editingFile = prefill ? prefill.file : null;
+  S.composeAuthor = prefill ? prefill.data.author : (parseInt(localStorage.getItem(LS_PREFIX + "lastauthor") || "0", 10) || 0);
+  const slot = document.getElementById("composerSlot");
+  slot.innerHTML = '<div class="composer"><h3>' + (prefill ? "修改这一篇" : "写一篇新的") + "</h3>" +
+    '<div class="author-pick">' + S.names.map((n, i) =>
+      '<div class="author-opt' + (i === S.composeAuthor ? " sel" : "") + '" data-author="' + i + '">' + sealHTML(i, n) + esc(n) + "</div>").join("") + "</div>" +
+    '<textarea id="composeText" placeholder="今天想留下点什么…">' + (prefill ? esc(prefill.data.text || "") : "") + "</textarea>" +
+    '<div class="img-row" id="imgRow"></div>' +
+    '<div class="composer-foot"><label class="attach-btn">＋ 加图片<input type="file" id="imgInput" accept="image/*" multiple class="hidden"></label>' +
+    '<div class="spacer"></div><button class="btn-ghost btn" onclick="closeComposer()">算了</button>' +
+    '<button class="btn" id="saveBtn" onclick="saveEntry()">留 下</button></div>' +
+    '<div class="status-line" id="composeStatus"></div></div>';
+  slot.querySelectorAll(".author-opt").forEach(el => el.addEventListener("click", () => {
+    S.composeAuthor = parseInt(el.dataset.author, 10);
+    slot.querySelectorAll(".author-opt").forEach(x => x.classList.toggle("sel", x === el));
+  }));
+  document.getElementById("imgInput").addEventListener("change", onImagesPicked);
+  renderComposeImages();
+  slot.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.getElementById("composeText").focus();
+}
+function closeComposer(){ document.getElementById("composerSlot").innerHTML = ""; S.editingFile = null; S.composeImages = []; }
+function renderComposeImages(){
+  const row = document.getElementById("imgRow"); if (!row) return;
+  row.innerHTML = S.composeImages.map((src, i) =>
+    '<div class="img-thumb"><img src="' + src + '"><button onclick="removeComposeImage(' + i + ')">×</button></div>').join("");
+}
+function removeComposeImage(i){ S.composeImages.splice(i, 1); renderComposeImages(); }
+async function onImagesPicked(e){
+  const status = document.getElementById("composeStatus");
+  for (const file of e.target.files) {
+    try { S.composeImages.push(await compressImage(file)); }
+    catch (err) { status.textContent = "有一张图片没处理好，跳过了。"; }
+  }
+  e.target.value = "";
+  renderComposeImages();
+}
+function compressImage(file){
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX = 1400;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      const scale = Math.min(1, MAX / Math.max(w, h));
+      w = Math.round(w * scale); h = Math.round(h * scale);
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL("image/jpeg", 0.8));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+async function saveEntry(){
+  const text = document.getElementById("composeText").value.trim();
+  const status = document.getElementById("composeStatus"), btn = document.getElementById("saveBtn");
+  if (!text && !S.composeImages.length) { status.textContent = "写点什么，或者加一张图片再留。"; return; }
+  btn.disabled = true; status.textContent = "正在加密保存…";
+  try {
+    let file = S.editingFile, sha = null, ts = new Date().toISOString(), oldId = null;
+    if (file) { const old = S.entries.find(x => x.file === file); if (old) { sha = old.sha; ts = old.data.ts; oldId = old.data.id; } }
+    else file = entryFileName(ts);
+    const data = { id: oldId || Math.random().toString(36).slice(2, 10), author: S.composeAuthor, ts, text, images: S.composeImages.slice() };
+    const blob = await encryptJSON(S.key, data);
+    const newSha = await store.putEntry(file, blob, sha);
+    localStorage.setItem(LS_PREFIX + "lastauthor", String(S.composeAuthor));
+    const ix = S.entries.findIndex(x => x.file === file);
+    const rec = { file, sha: newSha || sha, data };
+    if (ix >= 0) S.entries[ix] = rec; else S.entries.push(rec);
+    S.entries.sort((a, b) => new Date(b.data.ts) - new Date(a.data.ts));
+    renderJournal();
+  } catch (ex) {
+    btn.disabled = false;
+    status.textContent = "没存上：" + (ex.message || "检查一下网络再试");
+  }
+}
+function editEntry(file){ const en = S.entries.find(x => x.file === file); if (en) openComposer(en); }
+async function delEntry(file){
+  if (!confirm("确定要删掉这一篇吗？删了就找不回来了。")) return;
+  const en = S.entries.find(x => x.file === file);
+  try { await store.deleteEntry(file, en ? en.sha : null); S.entries = S.entries.filter(x => x.file !== file); renderJournal(); }
+  catch (ex) { alert("没删掉：" + (ex.message || "再试一次")); }
+}
+
+/* ---------------- print / book ---------------- */
+function printBook(){
+  const asc = S.entries.slice().sort((a, b) => new Date(a.data.ts) - new Date(b.data.ts));
+  let h = '<div class="book-title"><h1>两人笺</h1><p>' + esc(S.names.join(" 与 ")) + "</p><p>" +
+    (asc.length ? fmtDay(asc[0].data.ts) + " — " + fmtDay(asc[asc.length-1].data.ts) + " · 共 " + asc.length + " 篇" : "") + "</p></div>";
+  for (const en of asc) {
+    const d = en.data;
+    h += '<div class="p-entry"><div class="p-date">' + fmtDay(d.ts) + " " + fmtWeek(d.ts) + " " + fmtTime(d.ts) + '</div>' +
+      '<div class="p-who">' + esc(S.names[d.author] || "") + '</div><div class="p-text">' + esc(d.text || "") + "</div>" +
+      (d.images || []).map(src => '<img src="' + src + '">').join("") + "</div>";
+  }
+  document.getElementById("printArea").innerHTML = h;
+  window.print();
+}
+
+/* ---------------- lightbox ---------------- */
+function zoomImg(src){ const lb = document.getElementById("lightbox"); document.getElementById("lightboxImg").src = src; lb.classList.add("open"); }
+document.getElementById("lightbox").addEventListener("click", () => document.getElementById("lightbox").classList.remove("open"));
+
+/* ---------------- boot ---------------- */
+(async function boot(){
+  gateShell('<p class="sub" style="margin-top:8px">正在翻开日记…</p>');
+  try {
+    const vault = await store.getVault();
+    if (!vault) setupScreen(); else lockScreen();
+  } catch (ex) { lockScreen(); }
+})();
+</script>
+</body>
+</html>
