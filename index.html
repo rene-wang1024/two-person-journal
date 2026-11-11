@@ -55,6 +55,28 @@
   .checkline input{margin-top:4px;flex:none}
   .phrase-input{width:100%;padding:13px 14px;font-size:16px;font-family:var(--sans);color:var(--ink);border:1px solid var(--line);border-radius:6px;background:#fff;letter-spacing:1px;margin-bottom:12px;resize:vertical}
   .phrase-input:focus{outline:none;border-color:var(--vermilion)}
+
+  /* ---------- themes ---------- */
+  .theme-pick{display:flex;gap:8px;justify-content:center;margin:18px 0 2px;font-family:var(--sans)}
+  .theme-pick button{appearance:none;border:1px solid var(--line);background:transparent;border-radius:20px;padding:5px 15px;font-size:12.5px;color:var(--muted);cursor:pointer;letter-spacing:2px}
+  .theme-pick button.on{border-color:var(--vermilion);color:var(--vermilion);background:#fff}
+  [data-theme="minimal"]{--paper:#f6f6f4;--paper-card:#ffffff;--ink:#161616;--ink-soft:#3d3d3d;--muted:#8a8a86;--vermilion:#161616;--teal:#161616;--line:#e4e4df}
+  [data-theme="minimal"] .gate-card{box-shadow:0 1px 3px rgba(0,0,0,.05);border-radius:16px}
+  [data-theme="minimal"] .gate-seal{border-radius:50%;background:#161616}
+  [data-theme="minimal"] .gate h1{font-family:var(--sans);letter-spacing:8px}
+  [data-theme="minimal"] .top h1{font-family:var(--sans)}
+  [data-theme="minimal"] .seal{border-radius:50%;background:#161616}
+  [data-theme="minimal"] .seal.b{background:#9a9a94}
+  [data-theme="minimal"] .btn{border-radius:24px}
+  [data-theme="minimal"] .entry{border-radius:14px}
+  [data-theme="minimal"] .entry-text,[data-theme="minimal"] .p-text{font-family:var(--sans)}
+  [data-theme="letter"]{--paper:#eee3cb;--paper-card:#fdf8ec}
+  [data-theme="letter"] .gate-card{overflow:hidden}
+  [data-theme="letter"] .gate-card::before{content:"";position:absolute;top:0;left:0;right:0;height:12px;background:repeating-linear-gradient(45deg,#b3402e 0 18px,#fdf8ec 18px 36px,#2c4f9e 36px 54px,#fdf8ec 54px 72px)}
+  [data-theme="letter"] .gate-seal{border-radius:50%;background:transparent;color:#2c4f9e;border:2.5px solid #2c4f9e;transform:rotate(-9deg)}
+  [data-theme="letter"] .entry{border-style:dashed}
+  [data-theme="letter"] .seal{border-radius:50%}
+  [data-theme="letter"] .day-head{border-bottom-style:dashed}
   /* ---------- buttons ---------- */
   .btn{appearance:none;border:1px solid var(--vermilion);background:var(--vermilion);color:#fdf6ec;
     font-family:var(--serif);font-size:15px;letter-spacing:3px;padding:12px 26px;border-radius:6px;cursor:pointer;width:100%}
@@ -195,7 +217,8 @@ const I18N = {
     namesJoin: " 与 ", entriesSuffix: " 篇",
     ghRead: "GitHub 读取失败", ghSave: "GitHub 保存失败", ghDel: "GitHub 删除失败", ghList: "GitHub 列表失败",
     forgotLink: "忘了密码？用密码提示想一想", hintWas: "你们留下的提示是：",
-recLink: "忘了密码？用恢复短语打开", recTitle: "用恢复短语开笺",
+themeLabel: "风格", themePaper: "纸笺", themeMinimal: "极简", themeLetter: "信件",
+    recLink: "忘了密码？用恢复短语打开", recTitle: "用恢复短语开笺",
     recDesc: "把建笺时抄下的那串词按顺序输进来（词与词之间用空格隔开）。开笺之后，你会当场设一个新密码；日记内容不受影响。",
     recPh: "把恢复短语输在这里", recBtn: "用短语开笺", recErr: "这串词打不开这本日记——检查顺序和拼写，再试一次。",
     resetTitle: "短语对了，设个新密码", resetDesc: "新密码设好后，旧密码就作废了；恢复短语不变，还能用。", resetBtn: "设为新密码，进日记",
@@ -233,7 +256,8 @@ recLink: "忘了密码？用恢复短语打开", recTitle: "用恢复短语开�
     namesJoin: " & ", entriesSuffix: " entries",
     ghRead: "GitHub read failed", ghSave: "GitHub save failed", ghDel: "GitHub delete failed", ghList: "GitHub list failed",
     forgotLink: "Forgot it? Read the hint you left", hintWas: "Your hint: ",
-recLink: "Forgot the password? Open with the recovery phrase", recTitle: "Open with the recovery phrase",
+themeLabel: "Theme", themePaper: "Paper", themeMinimal: "Minimal", themeLetter: "Letter",
+    recLink: "Forgot the password? Open with the recovery phrase", recTitle: "Open with the recovery phrase",
     recDesc: "Type the words you wrote down when the journal was created, in order, separated by spaces. You will set a new password right after; the entries are untouched.",
     recPh: "Type the recovery phrase here", recBtn: "Open with the phrase", recErr: "That phrase does not open this journal — check the order and spelling, then try again.",
     resetTitle: "That is the right phrase — set a new password", resetDesc: "Once set, the old password stops working; the recovery phrase stays the same and still works.", resetBtn: "Set password & open",
@@ -253,6 +277,20 @@ function setLang(l){
   try { localStorage.setItem(LS_PREFIX + "lang", l); } catch (e) {}
   document.documentElement.lang = (l === "en") ? "en" : "zh-CN";
 }
+const THEMES = ["paper", "minimal", "letter"];
+let THEME = "paper";
+try { THEME = localStorage.getItem(LS_PREFIX + "theme") || "paper"; } catch (e) {}
+if (!THEMES.includes(THEME)) THEME = "paper";
+function setTheme(name, save){
+  if (!THEMES.includes(name)) return;
+  THEME = name;
+  document.documentElement.dataset.theme = name;
+  if (save !== false) { try { localStorage.setItem(LS_PREFIX + "theme", name); } catch (e) {} }
+}
+function adoptTheme(vault){
+  try { if (vault && vault.theme && !localStorage.getItem(LS_PREFIX + "theme")) setTheme(vault.theme); } catch (e) {}
+}
+function themeNameKey(){ return THEME === "paper" ? "themePaper" : (THEME === "minimal" ? "themeMinimal" : "themeLetter"); }
 
 /* ---------------- base64 / utf8 helpers ---------------- */
 function u8ToB64(u8){
@@ -435,6 +473,21 @@ function langSwitchHTML(){
   return '<div class="lang-switch"><button type="button" data-setlang="zh" class="' + (LANG === "zh" ? "on" : "") + '">中文</button>' +
     '<button type="button" data-setlang="en" class="' + (LANG === "en" ? "on" : "") + '">EN</button></div>';
 }
+function themePickHTML(){
+  return '<div class="theme-pick">' + THEMES.map(x =>
+    '<button type="button" data-settheme="' + x + '" class="' + (THEME === x ? "on" : "") + '">' + t(x === "paper" ? "themePaper" : (x === "minimal" ? "themeMinimal" : "themeLetter")) + "</button>").join("") + "</div>";
+}
+function wireThemePick(){
+  app.querySelectorAll("[data-settheme]").forEach(b => b.addEventListener("click", () => {
+    setTheme(b.dataset.settheme);
+    app.querySelectorAll("[data-settheme]").forEach(x => x.classList.toggle("on", x === b));
+  }));
+}
+function cycleTheme(){
+  const nx = THEMES[(THEMES.indexOf(THEME) + 1) % THEMES.length];
+  setTheme(nx);
+  renderJournal();
+}
 function wireLangSwitch(){
   app.querySelectorAll("[data-setlang]").forEach(b => b.addEventListener("click", () => {
     if (b.dataset.setlang === LANG) return;
@@ -447,8 +500,8 @@ function cycleLang(){ setLang(LANG === "zh" ? "en" : "zh"); renderJournal(); }
 function gateShell(inner){
   app.innerHTML = '<div class="gate"><div class="gate-card" id="gateCard">' + langSwitchHTML() +
     '<div class="gate-seal">笺</div><h1>两人笺</h1>' +
-    '<p class="sub">' + t("sub") + '</p><p class="sub-en">' + t("subAlt") + "</p>" + inner + "</div></div>";
-  wireLangSwitch();
+    '<p class="sub">' + t("sub") + '</p><p class="sub-en">' + t("subAlt") + "</p>" + themePickHTML() + inner + "</div></div>";
+  wireLangSwitch(); wireThemePick();
 }
 function lockScreen(errMsg){
   S.screen = "lock";
@@ -499,7 +552,7 @@ async function doUnlock(e){
   try {
     const vault = await store.getVault();
     if (!vault) { setupScreen(); return; }
-    S.hint = vault.hint || ""; S.isV2 = vault.v === 2; S.createdAt = vault.createdAt || ""; S.pairNo = vault.pairNo || null;
+    S.hint = vault.hint || ""; S.isV2 = vault.v === 2; S.createdAt = vault.createdAt || ""; S.pairNo = vault.pairNo || null; adoptTheme(vault);
     let key;
     if (S.isV2) key = await unwrapSlot(pw, slotOf(vault, "password"));
     else key = await deriveKey(pw, b64ToU8(vault.salt));
@@ -533,7 +586,7 @@ async function doSetup(e){
     const slotPw = await wrapSlot(pw1, masterB64);
     const phrase = genPhrase();
     const slotRec = await wrapSlot(normPhrase(phrase), masterB64);
-    const vaultObj = { v: 2, createdAt: new Date().toISOString().slice(0, 10),
+    const vaultObj = { v: 2, createdAt: new Date().toISOString().slice(0, 10), theme: THEME,
       slots: [ { type: "password", salt: slotPw.salt, wrapped: slotPw.wrapped },
                { type: "recovery", salt: slotRec.salt, wrapped: slotRec.wrapped } ] };
     if (hint) vaultObj.hint = hint;
@@ -569,6 +622,7 @@ function renderJournal(){
   let h = '<div class="screen"><div class="wrap">' +
     '<header class="top"><div class="t"><h1>两人笺</h1><p>' + headLine + "</p></div>" +
     '<div class="top-actions"><button class="btn-ghost btn" onclick="cycleLang()">' + (LANG === "zh" ? "EN" : "中文") + "</button>" +
+    '<button class="btn-ghost btn" onclick="cycleTheme()">' + t("themeLabel") + " · " + t(themeNameKey()) + "</button>" +
     (S.mode === "github" ? '<button class="btn-ghost btn" onclick="updateToken()">' + t("settingsBtn") + "</button>" : "") +
     '<button class="btn-ghost btn" onclick="printBook()">' + t("printBtn") + "</button>" +
     '<button class="btn-ghost btn" onclick="location.reload()">' + t("lockBtn") + "</button></div></header>" +
@@ -824,11 +878,12 @@ document.getElementById("lightbox").addEventListener("click", () => document.get
 /* ---------------- boot ---------------- */
 (async function boot(){
   document.documentElement.lang = (LANG === "en") ? "en" : "zh-CN";
+  document.documentElement.dataset.theme = THEME;
   S.screen = "loading";
   gateShell('<p class="sub" style="margin-top:8px">' + t("loading") + "</p>");
   try {
     const vault = await store.getVault();
-    if (vault) { S.hint = vault.hint || ""; S.isV2 = vault.v === 2; S.createdAt = vault.createdAt || ""; S.pairNo = vault.pairNo || null; }
+    if (vault) { S.hint = vault.hint || ""; S.isV2 = vault.v === 2; S.createdAt = vault.createdAt || ""; S.pairNo = vault.pairNo || null; adoptTheme(vault); }
     if (!vault) setupScreen(); else lockScreen();
   } catch (ex) { lockScreen(); }
 })();
