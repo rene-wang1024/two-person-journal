@@ -392,7 +392,9 @@ function renderJournal(){
   const days = Object.keys(groups).sort((a, b) => new Date(groups[b][0].data.ts) - new Date(groups[a][0].data.ts));
   let h = '<div class="screen"><div class="wrap">' +
     '<header class="top"><div class="t"><h1>两人笺</h1><p>' + esc(S.names.join(" · ")) + ' 的日记</p></div>' +
-    '<div class="top-actions"><button class="btn-ghost btn" onclick="printBook()">打印成册</button>' +
+    '<div class="top-actions">' +
+    (S.mode === "github" ? '<button class="btn-ghost btn" onclick="updateToken()">设置</button>' : "") +
+    '<button class="btn-ghost btn" onclick="printBook()">打印成册</button>' +
     '<button class="btn-ghost btn" onclick="location.reload()">锁上</button></div></header>' +
     (S.mode === "local" ? '<span class="mode-badge">本地演示模式 · 部署到 GitHub 后两人同步</span>' : "") +
     '<div class="write-bar"><button class="btn btn-write" onclick="openComposer()">写 一 篇</button></div>' +
@@ -506,6 +508,19 @@ async function delEntry(file){
   const en = S.entries.find(x => x.file === file);
   try { await store.deleteEntry(file, en ? en.sha : null); S.entries = S.entries.filter(x => x.file !== file); renderJournal(); }
   catch (ex) { alert("没删掉：" + (ex.message || "再试一次")); }
+}
+
+/* ---------------- settings: renew the GitHub token before it expires ---------------- */
+async function updateToken(){
+  const t = prompt("粘贴新的 GitHub 细粒度令牌（只授权本仓库、Contents 读写）。\n旧令牌到期前更新，日记的保存就不会中断；盐和密码都不变，已有日记不受影响。");
+  if (!t || !t.trim()) return;
+  try {
+    const cur = await ghGet("config.enc", false);
+    const blob = await encryptJSON(S.key, { names: S.names, token: t.trim() });
+    await ghPut("config.enc", blob, "更新访问令牌", cur ? cur.sha : null);
+    S.token = t.trim();
+    alert("令牌已更新好了。");
+  } catch (ex) { alert("没更新成功：" + (ex.message || "再试一次")); }
 }
 
 /* ---------------- print / book ---------------- */
