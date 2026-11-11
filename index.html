@@ -47,6 +47,14 @@
   .lang-switch{position:absolute;top:12px;right:12px;display:flex;border:1px solid var(--line);border-radius:20px;overflow:hidden;font-family:var(--sans)}
   .lang-switch button{appearance:none;border:none;background:transparent;padding:4px 11px;font-size:12px;color:var(--muted);cursor:pointer;letter-spacing:1px}
   .lang-switch button.on{background:var(--vermilion);color:#fdf6ec}
+
+  .phrase-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0 6px;text-align:left}
+  .phrase-word{background:#fff;border:1px solid var(--line);border-radius:6px;padding:9px 12px;font-size:16px;letter-spacing:1px}
+  .phrase-word span{color:var(--muted);font-size:11.5px;margin-right:8px;font-family:var(--sans)}
+  .checkline{display:flex;gap:9px;align-items:flex-start;text-align:left;font-size:13.5px;font-family:var(--sans);color:var(--ink-soft);margin:14px 0 6px;line-height:1.7;cursor:pointer}
+  .checkline input{margin-top:4px;flex:none}
+  .phrase-input{width:100%;padding:13px 14px;font-size:16px;font-family:var(--sans);color:var(--ink);border:1px solid var(--line);border-radius:6px;background:#fff;letter-spacing:1px;margin-bottom:12px;resize:vertical}
+  .phrase-input:focus{outline:none;border-color:var(--vermilion)}
   /* ---------- buttons ---------- */
   .btn{appearance:none;border:1px solid var(--vermilion);background:var(--vermilion);color:#fdf6ec;
     font-family:var(--serif);font-size:15px;letter-spacing:3px;padding:12px 26px;border-radius:6px;cursor:pointer;width:100%}
@@ -187,6 +195,13 @@ const I18N = {
     namesJoin: " 与 ", entriesSuffix: " 篇",
     ghRead: "GitHub 读取失败", ghSave: "GitHub 保存失败", ghDel: "GitHub 删除失败", ghList: "GitHub 列表失败",
     forgotLink: "忘了密码？用密码提示想一想", hintWas: "你们留下的提示是：",
+recLink: "忘了密码？用恢复短语打开", recTitle: "用恢复短语开笺",
+    recDesc: "把建笺时抄下的那串词按顺序输进来（词与词之间用空格隔开）。开笺之后，你会当场设一个新密码；日记内容不受影响。",
+    recPh: "把恢复短语输在这里", recBtn: "用短语开笺", recErr: "这串词打不开这本日记——检查顺序和拼写，再试一次。",
+    resetTitle: "短语对了，设个新密码", resetDesc: "新密码设好后，旧密码就作废了；恢复短语不变，还能用。", resetBtn: "设为新密码，进日记",
+    phraseTitle: "先把这串词抄下来",
+    phraseWarn: "这是这本日记的恢复短语，一共 10 个词。抄在纸上，和密码分开收好。哪天忘了密码，这串词能开笺并重设密码。它只出现这一次，关掉页面就再也看不到——纸丢了、密码也忘了，日记就永远打不开了。",
+    phraseCheck: "我已经把恢复短语抄在纸上收好了", phraseBtn: "抄好了 · 建这本日记",
     defaultNames: ["我", "他"]
   },
   en: {
@@ -218,6 +233,13 @@ const I18N = {
     namesJoin: " & ", entriesSuffix: " entries",
     ghRead: "GitHub read failed", ghSave: "GitHub save failed", ghDel: "GitHub delete failed", ghList: "GitHub list failed",
     forgotLink: "Forgot it? Read the hint you left", hintWas: "Your hint: ",
+recLink: "Forgot the password? Open with the recovery phrase", recTitle: "Open with the recovery phrase",
+    recDesc: "Type the words you wrote down when the journal was created, in order, separated by spaces. You will set a new password right after; the entries are untouched.",
+    recPh: "Type the recovery phrase here", recBtn: "Open with the phrase", recErr: "That phrase does not open this journal — check the order and spelling, then try again.",
+    resetTitle: "That is the right phrase — set a new password", resetDesc: "Once set, the old password stops working; the recovery phrase stays the same and still works.", resetBtn: "Set password & open",
+    phraseTitle: "First, write these words down",
+    phraseWarn: "This is the journal's recovery phrase — 10 words. Write it on paper and keep it apart from the password. If you ever forget the password, this phrase opens the journal and resets it. It is shown only this once; close the page and it is gone for good — lose the paper AND the password, and the journal can never be opened again.",
+    phraseCheck: "I have written the recovery phrase on paper and kept it safe", phraseBtn: "Done · Create the journal",
     defaultNames: ["Me", "Them"]
   }
 };
@@ -268,6 +290,35 @@ async function decryptJSON(key, blob){
   return JSON.parse(td.decode(pt));
 }
 
+
+/* ---------------- v2: master key + recovery phrase ----------------
+   The journal's content is encrypted with a random master key.
+   The master key is wrapped ("locked") twice, in two independent slots:
+   once by a key derived from the shared password, once by a key derived
+   from the recovery phrase. Either one opens the journal; the password
+   can be reset with the phrase without touching any entry.          */
+const RECOVERY_WORDS = ["apple","river","mountain","cloud","paper","stone","ocean","forest","window","garden","silver","golden","winter","summer","autumn","spring","morning","evening","candle","mirror","bridge","harbor","island","meadow","valley","desert","jungle","coral","pearl","amber","ivory","velvet","cotton","linen","marble","copper","bronze","iron","crystal","satin","breeze","thunder","lightning","rainbow","sunset","sunrise","moonlight","starlight","shadow","echo","whisper","melody","rhythm","poetry","letter","journal","pencil","ink","brush","canvas","violin","piano","guitar","flute","drum","bell","kite","balloon","feather","petal","leaf","branch","root","seed","bloom","rose","lily","lotus","bamboo","pine","maple","willow","orchid","tulip","daisy","violet","jasmine","peony","iris","fern","moss","clover","reef","wave","tide","shore","shell","sand","dune","cliff","cave","peak","lake","pond","stream","brook","falls","glacier","volcano","canyon","prairie","steppe","oasis","fjord","lagoon","atoll","bay","cape","dawn","dusk","twilight","midnight","aurora","comet","meteor","orbit","lunar","solar","cosmos","nebula","quasar","zenith","horizon","equator","meridian","atlas","compass","anchor","sail","voyage","marina","lighthouse","beacon","lantern","torch","ember","flame","spark","ash","smoke","mist","fog","frost","snow","rain","hail","storm","wind","gale","zephyr","monsoon","cyclone","tempest","serene","gentle","quiet","silent","sunny","crimson","azure","scarlet","jade","onyx","opal","ruby","topaz","garnet","quartz","agate","beryl","citrine","diamond","emerald","sapphire","amethyst","turquoise","lazuli","malachite","obsidian","basalt","granite","slate","shale","flint","chalk","clay","peat","gravel","pebble","boulder","cobble","timber","cedar","birch","oak","elm","juniper","beech","walnut","chestnut","hazel","acorn","almond","apricot","peach","plum","pear","fig","olive","lemon","melon","grape","berry","cherry","mango","kiwi","papaya","guava","lychee","persimmon","quince","rowan","sorrel","thyme","basil","mint","sage","rosemary","fennel","anise","clove","nutmeg","ginger","saffron","vanilla","cocoa","coffee","tea","honey","milk","cream","butter","cheese","bread","cake","pie"];
+function genPhrase(){
+  const b = crypto.getRandomValues(new Uint8Array(10));
+  return Array.from(b, x => RECOVERY_WORDS[x]).join(" ");
+}
+function normPhrase(s){ return String(s || "").trim().toLowerCase().split(/\s+/).join(" "); }
+async function makeMasterKey(){ return crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]); }
+async function exportMaster(key){ return u8ToB64(new Uint8Array(await crypto.subtle.exportKey("raw", key))); }
+async function importMaster(b64){ return crypto.subtle.importKey("raw", b64ToU8(b64), { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]); }
+async function wrapSlot(secret, masterB64){
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const kek = await deriveKey(secret, salt);
+  const wrapped = await encryptJSON(kek, { master: masterB64 });
+  return { salt: u8ToB64(salt), wrapped };
+}
+async function unwrapSlot(secret, slot){
+  const kek = await deriveKey(secret, b64ToU8(slot.salt));
+  const obj = await decryptJSON(kek, slot.wrapped);   // throws if secret is wrong
+  return importMaster(obj.master);
+}
+function slotOf(vault, type){ return (vault.slots || []).find(s => s.type === type) || null; }
+
 /* ---------------- state ---------------- */
 const S = {
   mode: (JOURNAL_CONFIG.owner && JOURNAL_CONFIG.repo) ? "github" : "local",
@@ -275,7 +326,7 @@ const S = {
   entries: [],          // [{file, sha, data:{id, author, ts, text, images[]}}]
   composeImages: [],    // dataURLs pending in composer
   editingFile: null,
-  screen: "", hint: ""
+  screen: "", hint: "", isV2: false, pairNo: null, createdAt: "", _vault: null
 };
 
 /* ---------------- GitHub API ---------------- */
@@ -324,7 +375,11 @@ const store = {
     const v = localStorage.getItem(LS_PREFIX + "vault"); return v ? JSON.parse(v) : null;
   },
   async putVault(vaultObj, tokenOverride){
-    if (S.mode === "github") await ghPut("vault.json", JSON.stringify(vaultObj, null, 2), "初始化日记本", null, tokenOverride);
+    if (S.mode === "github"){
+      let sha = null;
+      try { const old = S.token; if (tokenOverride) S.token = tokenOverride; const cur = await ghGet("vault.json"); sha = cur ? cur.sha : null; S.token = old; } catch (e) {}
+      await ghPut("vault.json", JSON.stringify(vaultObj, null, 2), sha ? "更新日记本设置" : "初始化日记本", sha, tokenOverride);
+    }
     else localStorage.setItem(LS_PREFIX + "vault", JSON.stringify(vaultObj));
   },
   async getConfig(){
@@ -398,16 +453,21 @@ function gateShell(inner){
 function lockScreen(errMsg){
   S.screen = "lock";
   const hintLink = S.hint ? '<p class="hint" style="text-align:center"><a href="#" id="hintLink" style="color:var(--vermilion)">' + t("forgotLink") + '</a></p><p class="hint hidden" id="hintText" style="text-align:center">' + t("hintWas") + esc(S.hint) + "</p>" : "";
+  const recLink = S.isV2 ? '<p class="hint" style="text-align:center"><a href="#" id="recLink" style="color:var(--vermilion)">' + t("recLink") + "</a></p>" : "";
+  const pair = pairLabel();
   gateShell(
     '<form id="unlockForm"><input type="password" id="pw" placeholder="' + t("unlockPwPh") + '" autocomplete="current-password">' +
     '<div class="err" id="gateErr">' + esc(errMsg || "") + '</div>' +
-    '<button class="btn" type="submit" id="unlockBtn">' + t("unlockBtn") + "</button></form>" + hintLink +
+    '<button class="btn" type="submit" id="unlockBtn">' + t("unlockBtn") + "</button></form>" + hintLink + recLink +
     '<p class="hint">' + t("unlockHint") + "</p>" +
-    (S.mode === "local" ? '<p class="hint">' + t("localHint") + "</p>" : "")
+    (S.mode === "local" ? '<p class="hint">' + t("localHint") + "</p>" : "") +
+    (pair ? '<p class="hint" style="text-align:center;letter-spacing:2px;margin-top:22px">' + esc(pair) + "</p>" : "")
   );
   document.getElementById("unlockForm").addEventListener("submit", doUnlock);
   const hl = document.getElementById("hintLink");
   if (hl) hl.addEventListener("click", e => { e.preventDefault(); document.getElementById("hintText").classList.remove("hidden"); hl.classList.add("hidden"); });
+  const rl = document.getElementById("recLink");
+  if (rl) rl.addEventListener("click", e => { e.preventDefault(); recoveryScreen(); });
   document.getElementById("pw").focus();
 }
 function setupScreen(errMsg){
@@ -439,8 +499,10 @@ async function doUnlock(e){
   try {
     const vault = await store.getVault();
     if (!vault) { setupScreen(); return; }
-    S.hint = vault.hint || "";
-    const key = await deriveKey(pw, b64ToU8(vault.salt));
+    S.hint = vault.hint || ""; S.isV2 = vault.v === 2; S.createdAt = vault.createdAt || ""; S.pairNo = vault.pairNo || null;
+    let key;
+    if (S.isV2) key = await unwrapSlot(pw, slotOf(vault, "password"));
+    else key = await deriveKey(pw, b64ToU8(vault.salt));
     const blob = await store.getConfig();
     const cfg = await decryptJSON(key, blob);   // throws if password is wrong
     S.key = key; S.salt = vault.salt; S.names = cfg.names || t("defaultNames"); S.token = cfg.token || null;
@@ -466,15 +528,17 @@ async function doSetup(e){
   if (S.mode === "github" && !token) { err.textContent = t("errToken"); return; }
   btn.disabled = true; btn.textContent = t("setupBusy");
   try {
-    const salt = crypto.getRandomValues(new Uint8Array(16));
-    const key = await deriveKey(pw1, salt);
-    const blob = await encryptJSON(key, { names: [nameA, nameB], token });
-    const vaultObj = { salt: u8ToB64(salt) };
+    const master = await makeMasterKey();
+    const masterB64 = await exportMaster(master);
+    const slotPw = await wrapSlot(pw1, masterB64);
+    const phrase = genPhrase();
+    const slotRec = await wrapSlot(normPhrase(phrase), masterB64);
+    const vaultObj = { v: 2, createdAt: new Date().toISOString().slice(0, 10),
+      slots: [ { type: "password", salt: slotPw.salt, wrapped: slotPw.wrapped },
+               { type: "recovery", salt: slotRec.salt, wrapped: slotRec.wrapped } ] };
     if (hint) vaultObj.hint = hint;
-    await store.putVault(vaultObj, token);
-    await store.putConfig(blob, token);
-    S.key = key; S.salt = u8ToB64(salt); S.names = [nameA, nameB]; S.token = token; S.hint = hint;
-    await enterJournal();
+    const configBlob = await encryptJSON(master, { names: [nameA, nameB], token });
+    phraseScreen({ vaultObj, configBlob, master, names: [nameA, nameB], token, phrase });
   } catch (ex) {
     btn.disabled = false; btn.textContent = t("setupBtn");
     err.textContent = t("errSetup") + (ex.message || "");
@@ -508,7 +572,7 @@ function renderJournal(){
     (S.mode === "github" ? '<button class="btn-ghost btn" onclick="updateToken()">' + t("settingsBtn") + "</button>" : "") +
     '<button class="btn-ghost btn" onclick="printBook()">' + t("printBtn") + "</button>" +
     '<button class="btn-ghost btn" onclick="location.reload()">' + t("lockBtn") + "</button></div></header>" +
-    (S.mode === "local" ? '<span class="mode-badge">' + t("localBadge") + "</span>" : "") +
+    (S.mode === "local" ? '<span class="mode-badge">' + t("localBadge") + "</span>" : "") + (pairLabel() ? '<span class="mode-badge">' + esc(pairLabel()) + "</span>" : "") +
     '<div class="write-bar"><button class="btn btn-write" onclick="openComposer()">' + t("writeBtn") + "</button></div>" +
     '<div id="composerSlot"></div>';
   if (!S.entries.length) {
@@ -531,6 +595,109 @@ function entryHTML(en){
     '<button class="op-btn" onclick="delEntry(\'' + en.file + '\')">' + t("opDel") + "</button></div></div>" +
     '<div class="entry-text">' + esc(d.text || "") + "</div>" +
     (imgs ? '<div class="entry-imgs">' + imgs + "</div>" : "") + "</article>";
+}
+
+
+/* ---------------- v2 screens: phrase, recovery, reset ---------------- */
+function pairLabel(){
+  if (S.pairNo) return LANG === "en" ? ("Pair No. " + S.pairNo + " to leave their fragments here") : ("第 " + S.pairNo + " 对 · 把碎片留下来的人");
+  if (S.createdAt) return (LANG === "en" ? "This journal · since " : "这一本 · 始于 ") + S.createdAt;
+  return "";
+}
+function phraseScreen(p){
+  S.screen = "phrase";
+  const words = p.phrase.split(" ");
+  gateShell(
+    '<p class="sub" style="letter-spacing:1px">' + t("phraseTitle") + "</p>" +
+    '<div class="phrase-grid">' + words.map((w, i) => '<div class="phrase-word"><span>' + (i + 1) + "</span>" + esc(w) + "</div>").join("") + "</div>" +
+    '<p class="hint">' + t("phraseWarn") + "</p>" +
+    '<label class="checkline"><input type="checkbox" id="phraseAck"> ' + t("phraseCheck") + "</label>" +
+    '<div class="err" id="gateErr"></div>' +
+    '<button class="btn" id="phraseBtn" disabled>' + t("phraseBtn") + "</button>"
+  );
+  const ack = document.getElementById("phraseAck"), btn = document.getElementById("phraseBtn");
+  ack.addEventListener("change", () => { btn.disabled = !ack.checked; });
+  btn.addEventListener("click", async () => {
+    btn.disabled = true; btn.textContent = t("setupBusy");
+    try {
+      await store.putVault(p.vaultObj, p.token);
+      await store.putConfig(p.configBlob, p.token);
+      S.key = p.master; S.names = p.names; S.token = p.token; S.hint = p.vaultObj.hint || "";
+      S.isV2 = true; S.createdAt = p.vaultObj.createdAt || ""; S.pairNo = p.vaultObj.pairNo || null;
+      await enterJournal();
+    } catch (ex) {
+      btn.disabled = false; btn.textContent = t("phraseBtn");
+      document.getElementById("gateErr").textContent = t("errSetup") + (ex.message || "");
+    }
+  });
+}
+function recoveryScreen(errMsg){
+  S.screen = "recovery";
+  gateShell(
+    '<p class="sub" style="letter-spacing:1px">' + t("recTitle") + "</p>" +
+    '<form id="recForm"><textarea id="recPhrase" class="phrase-input" rows="3" placeholder="' + t("recPh") + '"></textarea>' +
+    '<div class="err" id="gateErr">' + esc(errMsg || "") + "</div>" +
+    '<button class="btn" type="submit" id="recBtn">' + t("recBtn") + "</button></form>" +
+    '<p class="hint">' + t("recDesc") + "</p>"
+  );
+  document.getElementById("recForm").addEventListener("submit", doRecovery);
+  document.getElementById("recPhrase").focus();
+}
+async function doRecovery(e){
+  e.preventDefault();
+  const phrase = normPhrase(document.getElementById("recPhrase").value);
+  const btn = document.getElementById("recBtn"), err = document.getElementById("gateErr");
+  if (!phrase) return;
+  btn.disabled = true; err.textContent = "";
+  try {
+    const vault = await store.getVault();
+    const slot = slotOf(vault, "recovery");
+    if (!slot) throw new Error("no recovery slot");
+    const master = await unwrapSlot(phrase, slot);
+    const blob = await store.getConfig();
+    const cfg = await decryptJSON(master, blob);
+    S.key = master; S.names = cfg.names || t("defaultNames"); S.token = cfg.token || null;
+    S._vault = vault;
+    resetPwScreen();
+  } catch (ex) {
+    btn.disabled = false;
+    err.textContent = t("recErr");
+  }
+}
+function resetPwScreen(errMsg){
+  S.screen = "resetpw";
+  gateShell(
+    '<p class="sub" style="letter-spacing:1px">' + t("resetTitle") + "</p>" +
+    '<form id="resetForm">' +
+    '<input type="password" id="npw1" placeholder="' + t("pw1Ph") + '" autocomplete="new-password">' +
+    '<input type="password" id="npw2" placeholder="' + t("pw2Ph") + '" autocomplete="new-password">' +
+    '<div class="err" id="gateErr">' + esc(errMsg || "") + "</div>" +
+    '<button class="btn" type="submit" id="resetBtn">' + t("resetBtn") + "</button></form>" +
+    '<p class="hint">' + t("resetDesc") + "</p>"
+  );
+  document.getElementById("resetForm").addEventListener("submit", doResetPw);
+}
+async function doResetPw(e){
+  e.preventDefault();
+  const pw1 = document.getElementById("npw1").value, pw2 = document.getElementById("npw2").value;
+  const err = document.getElementById("gateErr"), btn = document.getElementById("resetBtn");
+  if (pw1.length < 8) { err.textContent = t("errPwShort"); return; }
+  if (pw1 !== pw2) { err.textContent = t("errPwMismatch"); return; }
+  btn.disabled = true;
+  try {
+    const masterB64 = await exportMaster(S.key);
+    const slot = await wrapSlot(pw1, masterB64);
+    const vault = S._vault || await store.getVault();
+    const ix = (vault.slots || []).findIndex(s => s.type === "password");
+    const newSlot = { type: "password", salt: slot.salt, wrapped: slot.wrapped };
+    if (ix >= 0) vault.slots[ix] = newSlot; else vault.slots.push(newSlot);
+    await store.putVault(vault);
+    S._vault = null;
+    await enterJournal();
+  } catch (ex) {
+    btn.disabled = false;
+    err.textContent = t("errSetup") + (ex.message || "");
+  }
 }
 
 /* ---------------- composer ---------------- */
@@ -661,7 +828,7 @@ document.getElementById("lightbox").addEventListener("click", () => document.get
   gateShell('<p class="sub" style="margin-top:8px">' + t("loading") + "</p>");
   try {
     const vault = await store.getVault();
-    if (vault) S.hint = vault.hint || "";
+    if (vault) { S.hint = vault.hint || ""; S.isV2 = vault.v === 2; S.createdAt = vault.createdAt || ""; S.pairNo = vault.pairNo || null; }
     if (!vault) setupScreen(); else lockScreen();
   } catch (ex) { lockScreen(); }
 })();
